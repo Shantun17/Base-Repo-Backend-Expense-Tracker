@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",                // Use ESNext module system
+    "moduleResolution": "bundler",     // Resolve modules as a bundler
+    "esModuleInterop": true,           // Allow ES Module interop
+    "allowImportingTsExtensions": true, // Allow imports to include TypeScript extensions
+    "noEmit": true,                    // Disable emitting files (we only use ts-node)
+    "resolveJsonModule": true,         // Allow importing JSON files
+    "strict": true                     // Enable strict type-checking options
+  },
+  "include": ["src/**/*.ts"],           // Include all TypeScript files in src
+  "exclude": ["node_modules"]           // Exclude node_modules
+}
