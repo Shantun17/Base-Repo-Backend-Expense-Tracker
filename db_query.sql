@@ -14,7 +14,7 @@ CREATE TABLE categories (
     user_id INT NOT NULL,
     category_name VARCHAR(255) NOT NULL,
     category_type VARCHAR(10) NOT NULL CHECK (category_type IN ('Income', 'Expense')),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -25,12 +25,14 @@ CREATE TYPE transaction_type_enum AS ENUM ('Income', 'Expense');
 
 CREATE TABLE transactions (
   id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  category_id INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  user_id INT NOT NULL,
+  category_id INT NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
   description TEXT,
-  date TIMESTAMPTZ NOT NULL,
+  date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   transaction_type transaction_type_enum NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
