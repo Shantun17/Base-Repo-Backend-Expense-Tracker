@@ -1,7 +1,11 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import bcrypt from 'bcrypt';
 import { pool } from '../models/db.ts';
-import { checkUserExistsQuery, insertUserQuery } from '../queries/authQueries.ts';
+import { checkUserExistsQuery, insertUserQuery, getUserByEmailQuery } from '../queries/authQueries.ts';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const signup: RequestHandler = async (
   req: Request,
@@ -58,3 +62,50 @@ export const signup: RequestHandler = async (
     next(error);
   }
 };
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'];
+
+export const login: RequestHandler = async(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const {email, password} = req.body;
+  if(!email || !password)
+  {
+     res.status(400).json({error: 'Email and Password are required'});
+     return;
+  }
+  
+  try 
+  {
+  const result = await pool.query(getUserByEmailQuery,[email]);
+  if(result.rows.length === 0)
+    {
+      res.status(401).json({ error: 'Invalid Email' });
+      return;
+    }  
+    const user = result.rows[0];
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+     res.status(401).json({ error: 'Password Do not match' });
+     return;
+    }
+
+    const payload = { userId: user.id, email: user.email };
+    const options: jwt.SignOptions = { expiresIn: JWT_EXPIRES_IN };
+    const token = jwt.sign(payload, JWT_SECRET as jwt.Secret, options);
+
+    res.status(200).json({
+      message: 'Logged in successfully',
+      token,
+      user: { id: user.id, email: user.email },
+    });
+
+  } 
+  catch (err: any) {
+    console.error('Login error:', err.message);
+    next(err);
+  }
+}
