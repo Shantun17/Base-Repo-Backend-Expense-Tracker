@@ -29,8 +29,7 @@ CREATE TABLE transactions (
   category_id INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
   amount DECIMAL(10,2) NOT NULL,
   description TEXT,
-  date TIMESTAMPTZ NOT NULL,
   transaction_type transaction_type_enum NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

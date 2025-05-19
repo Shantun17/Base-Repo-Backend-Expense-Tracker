@@ -12,11 +12,6 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Server is up and running!' });
-  });
-  
-
 pool.connect()
   .then(client => {
     console.log('Connected to PostgreSQL!');
