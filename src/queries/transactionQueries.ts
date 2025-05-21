@@ -1,0 +1,1 @@
+export const insertTransactionQuery = 'INSERT INTO transactions (user_id, category_id, amount, description, transaction_type) VALUES ($1,$2,$3,$4,$5)' ;
