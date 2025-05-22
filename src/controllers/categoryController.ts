@@ -1,7 +1,6 @@
 import type{Request, Response, NextFunction} from 'express';
-import {pool} from '../models/db.ts';
-import {insertCategoryQuery} from '../queries/categoryQueries.ts';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
+import { insertCategory } from '../dbHelper/categoryDBHelper.ts';
 
 export const addCategory = async (
     req : AuthenticatedRequest,
@@ -22,7 +21,7 @@ export const addCategory = async (
     return;
   }
   try {
-    await pool.query(insertCategoryQuery, [userId, name, type]);
+    await insertCategory(userId!,name,type);
     res.status(201).json({ message: 'Category added successfully' });
   } catch (error: any) {
     console.error('Error adding category:', error);
