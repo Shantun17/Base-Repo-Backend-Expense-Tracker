@@ -1,11 +1,14 @@
+
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import bcrypt from 'bcrypt';
-import { pool } from '../models/db.ts';
-import { checkUserExistsQuery, insertUserQuery, getUserByEmailQuery } from '../queries/authQueries.ts';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { checkUserExists, insertUser, getUserByEmail } from '../dbHelper/authDBHelper.ts';
 
 dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'];
 
 export const signup: RequestHandler = async (
   req: Request,
@@ -27,7 +30,10 @@ export const signup: RequestHandler = async (
 
   const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/\?]).{8,}$/;
   if (!passwordRegex.test(password)) {
-    res.status(400).json({ error: 'Password is too weak. It must contain at least 8 characters, a number, an uppercase letter, and a special character.' });
+    res.status(400).json({
+      error:
+        'Password is too weak. It must contain at least 8 characters, a number, an uppercase letter, and a special character.',
+    });
     return;
   }
 
@@ -37,34 +43,31 @@ export const signup: RequestHandler = async (
   }
 
   try {
-    const userCheck = await pool.query(checkUserExistsQuery, [email]);
+
+    const userCheck = await checkUserExists(email);
     if (userCheck.rows.length > 0) {
       res.status(409).json({ error: 'User already exists' });
       return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.query(insertUserQuery, [email, hashedPassword]);
+
+    await insertUser(email, hashedPassword);
+
     res.status(201).json({ message: 'User registered successfully' });
 
   } catch (error: any) {
     console.error('Error signing up user:', error.message);
-
 
     if (error.code === 'ECONNREFUSED') {
       res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
       return;
     }
 
-
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
-
     next(error);
   }
 };
-
-const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'];
 
 export const login: RequestHandler = async (
   req: Request,
@@ -72,21 +75,25 @@ export const login: RequestHandler = async (
   next: NextFunction
 ): Promise<void> => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     res.status(400).json({ error: 'Email and Password are required' });
     return;
   }
 
   try {
-    const result = await pool.query(getUserByEmailQuery, [email]);
+    const result = await getUserByEmail(email);
+
     if (result.rows.length === 0) {
       res.status(401).json({ error: 'Invalid Email' });
       return;
     }
+
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
+
     if (!valid) {
-      res.status(401).json({ error: 'Password Do not match' });
+      res.status(401).json({ error: 'Password does not match' });
       return;
     }
 
@@ -100,9 +107,9 @@ export const login: RequestHandler = async (
       user: { id: user.id, email: user.email },
     });
 
-  }
-  catch (err: any) {
+  } catch (err: any) {
     console.error('Login error:', err.message);
+    res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
     next(err);
   }
-}
+};
