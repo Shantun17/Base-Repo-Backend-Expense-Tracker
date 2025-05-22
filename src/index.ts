@@ -3,6 +3,7 @@ import express from 'express';
 import { pool } from './models/db.ts';
 import dotenv from 'dotenv';
 import categoryRoutes from './routes/categoryRoutes.ts';
+import transactionRoutes from './routes/transactionRoutes.ts';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/api', categoryRoutes);
+app.use('/api', transactionRoutes);
 pool.connect()
   .then(client => {
     console.log('Connected to PostgreSQL!');
