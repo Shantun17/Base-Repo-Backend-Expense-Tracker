@@ -1,6 +1,8 @@
 import type{Request, Response, NextFunction} from 'express';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
+
 import { insertCategory, getUserCategory, categoryExists} from '../dbHelper/categoryDBHelper.ts';
+
 
 
 export const addCategory = async (
@@ -50,10 +52,13 @@ export const getCategories = async (
   const userId = req.user?.userId;
 
   try {
+
     const result = await getUserCategory(userId!)
     res.status(200).json({ categories: result.rows });
   } catch (err: any) {
     console.error('Error fetching categories:', err.message);
+
+ 
 
     if (err.code === 'ECONNREFUSED') {
       res.status(503).json({ error: 'Service temporarily unavailable. Try again later.' });
