@@ -1,6 +1,6 @@
 import type{Request, Response, NextFunction} from 'express';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
-import { insertCategory, getUserCategory } from '../dbHelper/categoryDBHelper.ts';
+import { insertCategory, getUserCategory, categoryExists} from '../dbHelper/categoryDBHelper.ts';
 
 
 export const addCategory = async (
