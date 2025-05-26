@@ -20,6 +20,12 @@ export const addCategory = async (
     res.status(400).json({ error: 'Category Type is required' });
     return;
   }
+
+  if (type!="Expense"&&type!="Income")
+  {
+   res.status(400).json({ error: `Category name should be either 'Expense' or 'Income'`});
+  }
+
   try {
     const exists = await categoryExists(userId!, name, type);
     if (exists) {
