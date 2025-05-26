@@ -21,7 +21,7 @@ export const addCategory = async (
     return;
   }
 
-  if (type!="Expense"&&type!="Income")
+  if (type!=="Expense"&&type!=="Income")
   {
    res.status(400).json({ error: `Category name should be either 'Expense' or 'Income'`});
   }
