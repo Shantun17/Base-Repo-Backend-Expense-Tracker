@@ -1,15 +1,14 @@
 import type{Request, Response, NextFunction} from 'express';
-import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
 import { insertCategory, getUserCategory, categoryExists} from '../dbHelper/categoryDBHelper.ts';
 
 
 export const addCategory = async (
-  req : AuthenticatedRequest,
+  req : Request,
   res : Response,
   next : NextFunction
 ): Promise<void> => {
   const {name, type} = req.body;
-  const userId = req.user?.userId;
+  const userId = req.user.userId;
 
 
 if (!name) {
@@ -27,7 +26,7 @@ try {
     res.status(400).json({ error: 'Category already exists' });
     return;
   }
-  await insertCategory(userId!,name,type);
+  await insertCategory(userId,name,type);
   res.status(201).json({ message: 'Category added successfully' });
 } catch (error: any) {
   console.error('Error adding category:', error);
@@ -43,14 +42,14 @@ try {
 };
 
 export const getCategories = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const userId = req.user?.userId;
+  const userId = req.user.userId;
 
   try {
-    const result = await getUserCategory(userId!)
+    const result = await getUserCategory(userId)
     res.status(200).json({ categories: result.rows });
   } catch (err: any) {
     console.error('Error fetching categories:', err.message);

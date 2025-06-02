@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 
 app.use('/auth', authRoutes);
-app.use('/api', categoryRoutes);
+app.use('/api/category', categoryRoutes);
 
 pool.connect()
   .then(client => {
