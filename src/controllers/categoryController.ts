@@ -1,11 +1,10 @@
-import type{Response, NextFunction, Request} from 'express';
+import type{Response, Request} from 'express';
 
 import { insertCategory,categoryExists } from '../dbHelper/categoryDBHelper.ts';
 
 export const addCategory = async (
     req : Request,
     res : Response,
-    next : NextFunction
 ): Promise<void> => {
     const {name, type} = req.body;
     const userId = req.user.userId;
@@ -27,7 +26,7 @@ export const addCategory = async (
     return;
   }
   try {
-    const doesCategoExists = await categoryExists(userId!, name, type);
+    const doesCategoExists = await categoryExists(userId, name, type);
     if (doesCategoExists) {
       res.status(409).json({ error: 'Category already exists' });
       return;
@@ -44,6 +43,5 @@ export const addCategory = async (
     }
 
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
-    next(error);
   }
 };
