@@ -1,14 +1,13 @@
-import type{Request, Response, NextFunction} from 'express';
-import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
+import type{Response, Request} from 'express';
+
 import { insertCategory,categoryExists } from '../dbHelper/categoryDBHelper.ts';
 
 export const addCategory = async (
-    req : AuthenticatedRequest,
+    req : Request,
     res : Response,
-    next : NextFunction
 ): Promise<void> => {
     const {name, type} = req.body;
-    const userId = req.user?.userId;
+    const userId = req.user.userId;
 
 
   if (!name) {
@@ -20,15 +19,22 @@ export const addCategory = async (
     res.status(400).json({ error: 'Category Type is required' });
     return;
   }
+
+  if(type!=='Expense' && type!=='Income')
+  {
+    res.status(400).json({ error: `Category Type should be either 'Income' or 'Expense'` });
+    return;
+  }
   try {
-    const exists = await categoryExists(userId!, name, type);
-    if (exists) {
-      res.status(400).json({ error: 'Category already exists' });
+    const doesCategoExists = await categoryExists(userId, name, type);
+    if (doesCategoExists) {
+      res.status(409).json({ error: 'Category already exists' });
       return;
     }
-    await insertCategory(userId!,name,type);
+    await insertCategory(userId,name,type);
     res.status(201).json({ message: 'Category added successfully' });
-  } catch (error: any) {
+  } 
+  catch (error: any) {
     console.error('Error adding category:', error);
 
     if (error.code === 'ECONNREFUSED') {
@@ -37,6 +43,5 @@ export const addCategory = async (
     }
 
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
-    next(error);
   }
 };
