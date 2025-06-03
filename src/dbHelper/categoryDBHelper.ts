@@ -1,4 +1,5 @@
 import { pool } from '../models/db.ts';
+
 import { insertCategoryQuery,getUserCategoriesQuery,checkCategoryExistsQuery} from '../queries/categoryQueries.ts';
 
 export const insertCategory = async (userId: number, name: string, type: string) => {
@@ -11,9 +12,10 @@ export const getUserCategories = (userId: number)=>{
 
 export const categoryExists = async (userId: number, name: string, type: string): Promise<boolean> => {
   const result = await pool.query(checkCategoryExistsQuery, [userId, name, type]);
-  if (result.rowCount === null) {
+  if (result.rowCount === 0) {
     return false;
   }
-  return result.rowCount > 0;
+  return true;
 };
+
 
