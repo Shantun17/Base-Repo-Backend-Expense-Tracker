@@ -1,7 +1,10 @@
 import 'express';
-declare module 'express-serve-static-core' {
+
+declare module 'express-serve-static-core'
+  {
   interface Request 
      {
+
     user: { userId: number; email: string };
   }
 }
@@ -11,7 +14,6 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
 
 export const authenticateToken: RequestHandler = (req, res, next) => {
   const authHeader = req.headers['authorization'];

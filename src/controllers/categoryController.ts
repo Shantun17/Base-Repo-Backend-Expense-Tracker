@@ -1,6 +1,6 @@
 import type{Response, Request} from 'express';
 
-import { insertCategory,categoryExists } from '../dbHelper/categoryDBHelper.ts';
+import { insertCategory, getUserCategories, categoryExists} from '../dbHelper/categoryDBHelper.ts';
 
 export const addCategory = async (
     req : Request,
@@ -43,5 +43,28 @@ export const addCategory = async (
     }
 
     res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
+export const getCategories = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.user.userId;
+
+  try {
+    const result = await getUserCategories(userId)
+    res.status(200).json({ categories: result.rows });
+  } 
+  catch (err: any)
+  {
+    console.error('Error fetching categories:', err.message);
+
+    if (err.code === 'ECONNREFUSED') 
+      {
+      res.status(503).json({ error: 'Service temporarily unavailable. Try again later.' });
+      return;
+    }
+    res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
   }
 };

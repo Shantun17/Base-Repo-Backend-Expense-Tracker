@@ -6,6 +6,7 @@ import { pool } from './models/db.ts';
 import dotenv from 'dotenv';
 
 
+
 dotenv.config();
 
 const app = express();
@@ -13,9 +14,11 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 
+
 app.use('/api/login', loginRoutes);
 app.use('/api/signup', signupRoutes);
 app.use('/api/category',categoryRoutes);
+
 
 pool.connect()
   .then(client => {
