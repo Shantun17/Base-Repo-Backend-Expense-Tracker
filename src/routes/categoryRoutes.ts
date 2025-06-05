@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { addCategory } from '../controllers/categoryController.ts';
+import { addCategory,getCategories } from '../controllers/categoryController.ts';
 import { authenticateToken } from '../middleware/authMiddleware.ts';
 import { getCategories } from '../controllers/categoryController.ts';
 
 const router = Router();
 
-router.post('/category', authenticateToken, addCategory);
-router.get('/category', authenticateToken, getCategories);
+router.post('/', authenticateToken, addCategory);
+
+router.get('/', authenticateToken, getCategories);
+
+
 
 export default router;

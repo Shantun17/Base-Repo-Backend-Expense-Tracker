@@ -1,9 +1,11 @@
-import authRoutes from './routes/authRoutes.ts'; 
+import loginRoutes from './routes/loginRoutes.ts'; 
+import signupRoutes from './routes/signupRoutes.ts'; 
+import categoryRoutes from './routes/categoryRoutes.ts'
 import express from 'express';
 import { pool } from './models/db.ts';
 import dotenv from 'dotenv';
-import categoryRoutes from './routes/categoryRoutes.ts';
 import transactionRoutes from './routes/transactionRoutes.ts';
+
 
 dotenv.config();
 
@@ -12,9 +14,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 
-app.use('/auth', authRoutes);
-app.use('/api', categoryRoutes);
+
+
+app.use('/api/login', loginRoutes);
+app.use('/api/signup', signupRoutes);
+app.use('/api/category',categoryRoutes);
 app.use('/api/transaction', transactionRoutes);
+
 
 pool.connect()
   .then(client => {
