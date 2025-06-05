@@ -14,7 +14,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/api', categoryRoutes);
-app.use('/api', transactionRoutes);
+app.use('/api/transaction', transactionRoutes);
 
 pool.connect()
   .then(client => {
