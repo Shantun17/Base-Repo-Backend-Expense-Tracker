@@ -1,16 +1,15 @@
-import type { Request, Response, NextFunction } from 'express';
-import { insertTransaction } from '../dbHelper/transactionDBHelper.ts';
-import type { AuthenticatedRequest } from '../middleware/authMiddleware.ts';
+import type { Request, Response, } from 'express';
+import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid} from '../dbHelper/transactionDBHelper.ts';
+
 
 export const addTransaction = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  req: Request,
+  res: Response
 ): Promise<void> => {
   const { categoryId, amount, description, transactionType } = req.body;
-  const userId = req.user?.userId;
+  const userId = req.user.userId;
 
-  if (categoryId === undefined || amount === undefined || !transactionType) {
+  if (categoryId === undefined || amount === undefined || transactionType ===undefined) {
     res.status(400).json({ error: 'Category, amount, and transaction type are required.' });
     return;
   }
@@ -19,6 +18,13 @@ export const addTransaction = async (
     res.status(400).json({ error: 'Invalid categoryId. Must be a positive integer.' });
     return;
   }
+ 
+  const categoryExists = await checkCategoryIsValid(categoryId);
+  if (!categoryExists) {
+    res.status(400).json({ error: 'Category ID does not exist.' });
+    return;
+  }
+  
 
   if (typeof amount !== 'number' || amount <= 0) {
     res.status(400).json({ error: 'Amount must be a positive number.' });
@@ -31,13 +37,21 @@ export const addTransaction = async (
     return;
   }
 
-  if (description && description.length > 500) {
-    res.status(400).json({ error: 'Description too long. Maximum 500 characters allowed.' });
+  const isValidCategoryType = await checkCategoryMatchesWithType(categoryId, transactionType);
+
+  if (!isValidCategoryType) {
+    res.status(400).json({ error: 'Category does not match the transaction type.' });
+    return;
+  }
+  
+
+  if (description && description.length > 100) {
+    res.status(400).json({ error: 'Description too long. Maximum 100 characters allowed.' });
     return;
   }
 
   try {
-    await insertTransaction(userId!, categoryId, amount, description, transactionType);
+    await insertTransaction(userId, categoryId, amount, description, transactionType);
     res.status(201).json({ message: 'Transaction added successfully' });
   } catch (err: any) {
     console.error('Error adding transaction:', err.message);
@@ -48,6 +62,5 @@ export const addTransaction = async (
     }
 
     res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
-    next(err);
   }
 };
