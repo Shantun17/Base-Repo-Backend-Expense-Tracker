@@ -9,7 +9,7 @@ export const addTransaction = async (
   const { categoryId, amount, description, transactionType } = req.body;
   const userId = req.user.userId;
 
-  if (categoryId === undefined || amount === undefined || transactionType ===undefined) {
+  if (categoryId == null || amount == null || transactionType == null) {
     res.status(400).json({ error: 'Category, amount, and transaction type are required.' });
     return;
   }
@@ -37,6 +37,11 @@ export const addTransaction = async (
     return;
   }
 
+  if (description && description.length > 100) {
+    res.status(400).json({ error: 'Description too long. Maximum 100 characters allowed.' });
+    return;
+  }
+
   const isValidCategoryType = await checkCategoryMatchesWithType(categoryId, transactionType);
 
   if (!isValidCategoryType) {
@@ -44,12 +49,6 @@ export const addTransaction = async (
     return;
   }
   
-
-  if (description && description.length > 100) {
-    res.status(400).json({ error: 'Description too long. Maximum 100 characters allowed.' });
-    return;
-  }
-
   try {
     await insertTransaction(userId, categoryId, amount, description, transactionType);
     res.status(201).json({ message: 'Transaction added successfully' });
