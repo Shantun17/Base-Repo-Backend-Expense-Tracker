@@ -4,7 +4,10 @@ import { authenticateToken } from '../middleware/authMiddleware.ts';
 
 const router = Router();
 
-router.post('/category', authenticateToken, addCategory);
-router.get('/category', authenticateToken, getCategories);
+router.post('/', authenticateToken, addCategory);
+
+router.get('/', authenticateToken, getCategories);
+
+
 
 export default router;

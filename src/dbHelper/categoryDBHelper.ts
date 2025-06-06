@@ -17,3 +17,5 @@ export const categoryExists = async (userId: number, name: string, type: string)
   }
   return true;
 };
+
+
