@@ -9,4 +9,5 @@ router.post('/', authenticateToken, addCategory);
 router.get('/', authenticateToken, getCategories);
 
 
+
 export default router;

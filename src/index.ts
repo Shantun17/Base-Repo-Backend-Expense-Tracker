@@ -4,7 +4,7 @@ import categoryRoutes from './routes/categoryRoutes.ts'
 import express from 'express';
 import { pool } from './models/db.ts';
 import dotenv from 'dotenv';
-
+import transactionRoutes from './routes/transactionRoutes.ts';
 
 
 dotenv.config();
@@ -15,9 +15,11 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 
 
+
 app.use('/api/login', loginRoutes);
 app.use('/api/signup', signupRoutes);
 app.use('/api/category',categoryRoutes);
+app.use('/api/transaction', transactionRoutes);
 
 
 pool.connect()
