@@ -19,7 +19,6 @@ export const addTransaction = async (
     res.status(400).json({error:'Amount is required and it must be a positive number.'})
     return;
   }
-  
   const validTypes = ['Income', 'Expense'];
 
   if(!transactionType || !validTypes.includes(transactionType))
@@ -42,8 +41,10 @@ export const addTransaction = async (
     res.status(400).json({ error: 'Category does not match the transaction type.' });
     return;
   }
+
     await insertTransaction(userId, categoryId, amount, description, transactionType);
     res.status(201).json({ message: 'Transaction added successfully' });
+    
   }
    catch (err: any) 
    {
