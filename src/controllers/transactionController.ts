@@ -1,7 +1,6 @@
 import type { Request, Response, } from 'express';
 import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid} from '../dbHelper/transactionDBHelper.ts';
 
-
 export const addTransaction = async (
   req: Request,
   res: Response
@@ -9,36 +8,29 @@ export const addTransaction = async (
   const { categoryId, amount, description, transactionType } = req.body;
   const userId = req.user.userId;
 
-  if (categoryId == null || amount == null || transactionType == null) {
-    res.status(400).json({ error: 'Category, amount, and transaction type are required.' });
+  if(!categoryId || !Number.isInteger(categoryId) || categoryId <=0)
+  {
+    res.status(400).json({error:'CategoryId is required, and it must be a positive integer'})
     return;
   }
 
-  if (!Number.isInteger(categoryId) || categoryId <= 0) {
-    res.status(400).json({ error: 'Invalid categoryId. Must be a positive integer.' });
-    return;
-  }
- 
-  const categoryExists = await checkCategoryIsValid(categoryId);
-  if (!categoryExists) {
-    res.status(400).json({ error: 'Category ID does not exist.' });
+  if(!amount || typeof amount !== 'number' || amount <0 )
+  {
+    res.status(400).json({error:'Amount is required and it must be a positive number.'})
     return;
   }
   
-
-  if (typeof amount !== 'number' || amount <= 0) {
-    res.status(400).json({ error: 'Amount must be a positive number.' });
-    return;
-  }
-
   const validTypes = ['Income', 'Expense'];
-  if (!validTypes.includes(transactionType)) {
-    res.status(400).json({ error: 'Invalid transaction type. Must be Income or Expense.' });
-    return;
+
+  if(!transactionType || !validTypes.includes(transactionType))
+  {
+   res.status(400).json({error:`Transaction Type is required and it must be either 'Expense or 'Income'`})
+   return;
   }
 
-  if (description && description.length > 100) {
-    res.status(400).json({ error: 'Description too long. Maximum 100 characters allowed.' });
+  const categoryExists = await checkCategoryIsValid(categoryId);
+  if (!categoryExists) {
+    res.status(400).json({ error: 'Category ID does not exist.' });
     return;
   }
 
@@ -49,10 +41,13 @@ export const addTransaction = async (
     return;
   }
   
-  try {
+  try 
+  {
     await insertTransaction(userId, categoryId, amount, description, transactionType);
     res.status(201).json({ message: 'Transaction added successfully' });
-  } catch (err: any) {
+  }
+   catch (err: any) 
+   {
     console.error('Error adding transaction:', err.message);
 
     if (err.code === 'ECONNREFUSED') {

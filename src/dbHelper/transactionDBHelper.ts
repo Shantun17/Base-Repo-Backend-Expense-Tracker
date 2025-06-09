@@ -6,11 +6,11 @@ export const insertTransaction = (userId:number, category_id:number, amount:numb
     return  pool.query(insertTransactionQuery,[userId,category_id,amount,description,transaction_type]);
 }
 
-export const checkCategoryMatchesWithType = async(categoryId:number, Type:string)=>
+export const checkCategoryMatchesWithType = async(categoryId:number, type:string): Promise<boolean>=>
 {
    const result = await pool.query(getCategoryType, [categoryId]);
    const extractedType = result.rows[0].category_type;
-   return (Type === extractedType)
+   return (type === extractedType)
 }
 
 
