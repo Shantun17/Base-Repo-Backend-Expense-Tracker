@@ -8,7 +8,7 @@ export const addTransaction = async (
   const { categoryId, amount, description, transactionType } = req.body;
   const userId = req.user.userId;
 
-  if(!categoryId || !Number.isInteger(categoryId) || categoryId <=0)
+  if(!categoryId || !Number.isInteger(categoryId) || categoryId <0)
   {
     res.status(400).json({error:'CategoryId is required, and it must be a positive integer'})
     return;
@@ -28,6 +28,8 @@ export const addTransaction = async (
    return;
   }
 
+  try 
+  {
   const categoryExists = await checkCategoryIsValid(categoryId);
   if (!categoryExists) {
     res.status(400).json({ error: 'Category ID does not exist.' });
@@ -40,9 +42,6 @@ export const addTransaction = async (
     res.status(400).json({ error: 'Category does not match the transaction type.' });
     return;
   }
-  
-  try 
-  {
     await insertTransaction(userId, categoryId, amount, description, transactionType);
     res.status(201).json({ message: 'Transaction added successfully' });
   }
