@@ -1,5 +1,5 @@
 import type { Request, Response, } from 'express';
-import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid} from '../dbHelper/transactionDBHelper.ts';
+import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid,getUserTransactions} from '../dbHelper/transactionDBHelper.ts';
 
 export const addTransaction = async (
   req: Request,
@@ -58,3 +58,26 @@ export const addTransaction = async (
     res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
   }
 };
+
+export const getTransactions = async(
+  req: Request,
+  res: Response
+):Promise<void>=>{
+  const userId = req.user.userId
+  try 
+  {
+  const result = await getUserTransactions(userId)
+  res.status(200).json({Transactions: result.rows}); 
+  }
+   catch (err:any) 
+  {
+    console.error('Error fetching categories:', err.message);
+    if (err.code === 'ECONNREFUSED') 
+      {
+      res.status(503).json({ error: 'Service temporarily unavailable. Try again later.' });
+      return;
+    }
+    res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
+  }  
+
+}

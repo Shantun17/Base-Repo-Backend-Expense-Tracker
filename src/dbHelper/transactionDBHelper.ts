@@ -1,5 +1,5 @@
 import { pool } from "../models/db.ts";
-import { insertTransactionQuery,getCategoryType,checkCategoryExistsQuery } from "../queries/transactionQueries.ts";
+import { insertTransactionQuery,getCategoryType,checkCategoryExistsQuery,getUserTransactionsQuery } from "../queries/transactionQueries.ts";
 
 export const insertTransaction = (userId:number, category_id:number, amount:number, description:string, transaction_type:string)=>
 {
@@ -22,3 +22,7 @@ export const checkCategoryIsValid = async (categoryId: number): Promise<boolean>
     return true;
   };
   
+  export const getUserTransactions = (userId:number)=>
+  {
+    return pool.query(getUserTransactionsQuery,[userId])
+  }
