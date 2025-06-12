@@ -1,5 +1,5 @@
 import type { Request, Response, } from 'express';
-import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid,getUserTransactions} from '../dbHelper/transactionDBHelper.ts';
+import { insertTransaction,checkCategoryMatchesWithType,checkCategoryIsValid,getFilteredTransactions} from '../dbHelper/transactionDBHelper.ts';
 
 export const addTransaction = async (
   req: Request,
@@ -59,25 +59,80 @@ export const addTransaction = async (
   }
 };
 
-export const getTransactions = async(
+export const getTransactions = async (
   req: Request,
   res: Response
-):Promise<void>=>{
-  const userId = req.user.userId
-  try 
-  {
-  const result = await getUserTransactions(userId)
-  res.status(200).json({Transactions: result.rows}); 
-  }
-   catch (err:any) 
-  {
-    console.error('Error fetching categories:', err.message);
-    if (err.code === 'ECONNREFUSED') 
-      {
-      res.status(503).json({ error: 'Service temporarily unavailable. Try again later.' });
+): Promise<void> => {
+  const userId = req.user.userId;
+  const { type, categories, month, sort } = req.query;
+
+  const filters: {
+    type?: string;
+    categories?: number[];
+    month?: string;
+    sort?: string;
+  } = {};
+
+  if (type) {
+    if (typeof type !== 'string') {
+      res.status(400).json({ error: `'type' must be a string` });
       return;
     }
-    res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
-  }  
+    if (type !== 'Income' && type !== 'Expense') {
+      res.status(400).json({ error: `'type' must be either 'Income' or 'Expense'` });
+      return;
+    }
+    filters.type = type;
+  }
 
-}
+  if (categories) {
+    if (typeof categories !== 'string') {
+      res.status(400).json({ error: `'categories' must be a comma-separated string of numeric IDs` });
+      return;
+    }
+    const categoriesInInteger = categories.split(',').map((i) => parseInt(i));
+    if (categoriesInInteger.some((i) => isNaN(i))) {
+      res.status(400).json({ error: `'categories' must be a comma-separated list of numeric IDs` });
+      return;
+    }
+    filters.categories = categoriesInInteger;
+  }
+
+  if (month) {
+    if (typeof month !== 'string') {
+      res.status(400).json({ error: `'month' must be a string in YYYY-MM format` });
+      return;
+    }
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      res.status(400).json({ error: `'month' must be in YYYY-MM format` });
+      return;
+    }
+    filters.month = month;
+  }
+
+  const allowedSorts = ['date', 'date_desc', 'amount', 'amount_desc'];
+  if (sort) {
+    if (typeof sort !== 'string') {
+      res.status(400).json({ error: `'sort' must be a string` });
+      return;
+    }
+    if (!allowedSorts.includes(sort)) {
+      res.status(400).json({ error: `'sort' must be one of: ${allowedSorts.join(', ')}` });
+      return;
+    }
+    filters.sort = sort;
+  }
+
+  try {
+    const result = await getFilteredTransactions(userId, filters);
+    res.status(200).json({ transactions: result.rows });
+  } catch (err: any) {
+    console.error('Error fetching transactions:', err.message);
+    if (err.code === 'ECONNREFUSED') {
+      res.status(503).json({ error: 'Service temporarily unavailable. Try again later.' });
+    } else {
+      res.status(500).json({ error: 'An unexpected error occurred. Try again later.' });
+    }
+  }
+};
+
